@@ -1,5 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CalendarOptions, DateSelectArg, EventClickArg, EventApi, EventInput } from '@fullcalendar/angular';
+import * as moment from 'moment';
+
 
 @Component({
   selector: 'app-calendar',
@@ -8,66 +10,83 @@ import { CalendarOptions, DateSelectArg, EventClickArg, EventApi, EventInput } f
 })
 export class CalendarComponent implements OnInit {
 
-  constructor() { }
+  calendarOptions: CalendarOptions;
+  currentEvents: any[] = []; // EventApi[]
+  TODAY_STR = new Date().toISOString().replace(/T.*$/, '');
+  INITIAL_EVENTS: EventInput[];
+  businessHours: any[];
+
+  constructor() {
+    this.businessHours = [{
+      daysOfWeek: [1],
+      startTime: '08:00',
+      endTime: '18:00'
+    },
+    {
+      daysOfWeek: [2],
+      startTime: '7:00',
+      endTime: '18:00'
+    }, {
+      daysOfWeek: [3],
+      startTime: '08:00',
+      endTime: '18:00'
+    },
+    {
+      daysOfWeek: [4],
+      startTime: '7:00',
+      endTime: '18:00'
+    }, {
+      daysOfWeek: [5],
+      startTime: '08:00',
+      endTime: '18:00'
+    }]
+    this.INITIAL_EVENTS = [
+      {
+        id: '2',
+        title: 'Timed event waa',
+        start: this.TODAY_STR + 'T12:00:00',
+        end: this.TODAY_STR + 'T16:00:00'
+      }
+    ];
+
+
+    this.calendarOptions = {
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'timeGridWeek,timeGridDay'
+      },
+      hiddenDays: [6],
+      allDaySlot: false,
+      height: 400,
+      slotDuration: '01:00:00',
+      slotLabelInterval: '01:00:00',
+      // locale: esLocale, 
+      validRange: {
+        start: this.TODAY_STR,
+        // end: '2021-06-01'
+      },
+      businessHours: this.businessHours,
+      initialView: 'timeGridWeek',
+      initialEvents: this.INITIAL_EVENTS,
+      weekends: true,
+      editable: false,
+      selectable: true,
+      selectMirror: true,
+      dayMaxEvents: true,
+      select: this.handleDateSelect.bind(this),
+      eventClick: this.handleEventClick.bind(this),
+      eventsSet: this.handleEvents.bind(this),
+      // eventBorderColor:'#00d1ce',
+      // eventBackgroundColor:'#00d1ce',
+    };
+
+  }
 
   ngOnInit(): void {
+    console.log(this.TODAY_STR);
   }
 
-
-
-
-
-  title = 'reservation';
-
-
-
-  eventGuid = 0;
-  TODAY_STR = new Date().toISOString().replace(/T.*$/, ''); // YYYY-MM-DD of today
-  INITIAL_EVENTS: EventInput[] = [
-    {
-      id: this.createEventId(),
-      title: 'All-day event',
-      start: this.TODAY_STR
-    },
-    {
-      id: this.createEventId(),
-      title: 'Timed event',
-      start: this.TODAY_STR + 'T12:00:00'
-    }
-  ];
-  
-  createEventId() {
-    return String(this.eventGuid++);
-  }
-
-  calendarVisible = true;
-  calendarOptions: CalendarOptions = {
-    headerToolbar: {
-      left: 'prev,next today',
-      center: 'title',
-      right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
-    },
-    initialView: 'dayGridMonth',
-    initialEvents: this.INITIAL_EVENTS, // alternatively, use the `events` setting to fetch from a feed
-    weekends: true,
-    editable: true,
-    selectable: true,
-    selectMirror: true,
-    dayMaxEvents: true,
-    select: this.handleDateSelect.bind(this),
-    eventClick: this.handleEventClick.bind(this),
-    eventsSet: this.handleEvents.bind(this)
-    /* you can update a remote database when these fire:
-    eventAdd:
-    eventChange:
-    eventRemove:
-    */
-  };
-  currentEvents: EventApi[] = [];
-
-  handleCalendarToggle() {
-    this.calendarVisible = !this.calendarVisible;
-  }
 
   handleWeekendsToggle() {
     const { calendarOptions } = this;
@@ -75,20 +94,37 @@ export class CalendarComponent implements OnInit {
   }
 
   handleDateSelect(selectInfo: DateSelectArg) {
-    const title = prompt('Please enter a new title for your event');
+    // const title = prompt('Please enter a new title for your event');
     const calendarApi = selectInfo.view.calendar;
 
     calendarApi.unselect(); // clear date selection
 
-    if (title) {
+    if (this.sameBusinessHours(selectInfo.start, selectInfo.end)
+      && this.scheduleClash(selectInfo.start, selectInfo.end)
+      && this.sameDay(selectInfo.start, selectInfo.end)
+    ) {
+      console.log("se crea evento")
       calendarApi.addEvent({
-        id: this.createEventId(),
-        title,
+        title: 'titulo',
         start: selectInfo.startStr,
         end: selectInfo.endStr,
-        allDay: selectInfo.allDay
+        overlap: false,
+        id: 'id',
+        durationEditable: true,
+        startEditable: true,
+        constraint: 'businessHours',
+        backgroundColor: "#00d1ce",
+        borderColor: "#00d1ce",
       });
     }
+    // else {
+    //   alert("selecciona horario valido");
+    // }
+
+
+    // console.log(" selectinfo:", selectInfo);
+    // console.log("calendarApi:", calendarApi);
+    // console.log("currentEvents:::", this.currentEvents);
   }
 
   handleEventClick(clickInfo: EventClickArg) {
@@ -101,4 +137,139 @@ export class CalendarComponent implements OnInit {
     this.currentEvents = events;
   }
 
+
+  sameBusinessHours(start: Date, end: Date) {
+    let flag = false;
+    const startH = moment(start.getHours(), "HH:mm");
+    const endH = moment(end.getHours(), "HH:mm");
+    this.businessHours.forEach(element => {
+      // if ((element.daysOfWeek[0] == start.getDay()) && (start.getHours() >= element.startTime.split(":")[0]) && (end.getHours() <= element.endTime.split(":")[0])) {    
+      if ((element.daysOfWeek[0] == start.getDay()) && (startH.isSameOrAfter(moment(element.startTime, "HH:mm"))) && (endH.isSameOrBefore(moment(element.endTime, 'HH:mm')))) {
+        flag = true
+      }
+
+    });
+
+    return flag
+  }
+
+
+  scheduleClash(start: Date, end: Date) {
+    let flag;
+    let res;
+    this.currentEvents.forEach(element => {
+      // if ((element.start.getDate() == end.getDate()) && (element.start.getMonth() == end.getMonth()) && (element.start.getFullYear() == end.getFullYear())) {
+      if (moment(element.start).isSame(end, 'day')) {
+        res = element.start.getHours() - end.getHours();
+        if (res < 0 && element.end.getHours() > start.getHours()) {
+          flag = true
+        }
+      }
+    });
+    flag = (flag == true) ? false : true;
+    return flag
+  }
+
+  
+  sameDay(start:Date, end:Date){
+    let flag=false;
+    
+    if(moment(start).isSame(end,'day')){
+      flag=true;
+    }
+    console.log('sameDay:', flag);
+    
+    return flag;
+  }
+
+
+
+
+  // por defecto
+  // title = 'reservation';
+
+
+
+  // eventGuid = 0;
+  // TODAY_STR = new Date().toISOString().replace(/T.*$/, ''); // YYYY-MM-DD of today
+  // INITIAL_EVENTS: EventInput[] = [
+  //   {
+  //     id: this.createEventId(),
+  //     title: 'All-day event',
+  //     start: this.TODAY_STR
+  //   },
+  //   {
+  //     id: this.createEventId(),
+  //     title: 'Timed event',
+  //     start: this.TODAY_STR + 'T12:00:00'
+  //   }
+  // ];
+
+  // createEventId() {
+  //   return String(this.eventGuid++);
+  // }
+
+  // calendarVisible = true;
+  // calendarOptions: CalendarOptions = {
+  //   headerToolbar: {
+  //     left: 'prev,next today',
+  //     center: 'title',
+  //     right: 'timeGridWeek,timeGridDay,listWeek'
+  //   },
+  //   initialView: 'timeGridWeek',
+  //   initialEvents: this.INITIAL_EVENTS, // alternatively, use the `events` setting to fetch from a feed
+  //   weekends: true,
+  //   editable: true,
+  //   selectable: true,
+  //   selectMirror: true,
+  //   dayMaxEvents: true,
+  //   select: this.handleDateSelect.bind(this),
+  //   eventClick: this.handleEventClick.bind(this),
+  //   eventsSet: this.handleEvents.bind(this)
+  //   /* you can update a remote database when these fire:
+  //   eventAdd:
+  //   eventChange:
+  //   eventRemove:
+  //   */
+  // };
+  // currentEvents: EventApi[] = [];
+
+  // handleCalendarToggle() {
+  //   this.calendarVisible = !this.calendarVisible;
+  // }
+
+  // handleWeekendsToggle() {
+  //   const { calendarOptions } = this;
+  //   calendarOptions.weekends = !calendarOptions.weekends;
+  // }
+
+  // handleDateSelect(selectInfo: DateSelectArg) {
+  //   const title = prompt('Please enter a new title for your event');
+  //   const calendarApi = selectInfo.view.calendar;
+
+  //   calendarApi.unselect(); // clear date selection
+
+  //   if (title) {
+  //     calendarApi.addEvent({
+  //       id: this.createEventId(),
+  //       title,
+  //       start: selectInfo.startStr,
+  //       end: selectInfo.endStr,
+  //       allDay: selectInfo.allDay
+  //     });
+  //   }
+  // }
+
+  // handleEventClick(clickInfo: EventClickArg) {
+  //   if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'`)) {
+  //     clickInfo.event.remove();
+  //   }
+  // }
+
+  // handleEvents(events: EventApi[]) {
+  //   this.currentEvents = events;
+  // }
+
 }
+
+
