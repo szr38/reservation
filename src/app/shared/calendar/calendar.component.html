@@ -1,2 +1,9 @@
-<full-calendar [options]='calendarOptions'>
-</full-calendar>
+<section>
+    <div  fxLayout="row" fxLayoutAlign="end center"><span class="letter">Hours: <b>{{timeCount}}</b></span></div>
+    <full-calendar [options]='calendarOptions'>
+    </full-calendar>
+    <button (click)="onReservation()">Reserve</button>
+    <button (click)="deleteCalendarInfo()">Delete Info</button>
+    <button (click)="test()">Get</button>
+
+</section>
