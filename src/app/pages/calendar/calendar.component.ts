@@ -65,7 +65,7 @@ export class CalendarComponent implements OnInit {
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',
-        right: 'timeGridWeek,timeGridDay'
+        right: 'timeGridWeek,timeGridDay,list'
       },
       hiddenDays: [0],
       allDaySlot: false,
@@ -218,6 +218,7 @@ export class CalendarComponent implements OnInit {
 
   test(){
     console.log(this.infor.getInitialEvents());
+    console.log('auth: ',this.infor.getAuth());
     
   }
 

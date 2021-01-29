@@ -8,6 +8,10 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FlexLayoutModule } from '@angular/flex-layout';
 
 import {SharedModule} from '../app/shared/shared.module';
+import { PagesModule } from './pages/pages.module';
+import { HttpClientModule } from '@angular/common/http';
+
+
 
 
 
@@ -22,6 +26,8 @@ import {SharedModule} from '../app/shared/shared.module';
     BrowserAnimationsModule,
     FlexLayoutModule,
     SharedModule,
+    PagesModule,
+    HttpClientModule
   ],
   providers: [],
   bootstrap: [AppComponent]
