@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { EventApi, EventInput } from '@fullcalendar/angular';
 import { Observable, throwError } from 'rxjs';
 import { retry, catchError } from 'rxjs/operators';
+import { User } from '../shared/interface/user'
 
 @Injectable({
   providedIn: 'root'
@@ -10,41 +11,74 @@ import { retry, catchError } from 'rxjs/operators';
 export class InformationService {
 
 
-  INITIAL_EVENTS:EventInput[];
+  INITIAL_EVENTS: EventInput[];
 
-  auth:boolean=false;
-
-  // initUsers:any[];
+  user: User;
 
   constructor(private http: HttpClient) {
-    this.INITIAL_EVENTS=JSON.parse(this.getItem());
-   }
+    this.INITIAL_EVENTS = JSON.parse(this.getLocalCalendar());
+    this.user = JSON.parse(this.getLocalUser());
+    if (this.user == null) {
+      console.log('user null', this.user);
+      const temp: User = {
+        address: {},
+        email: '',
+        id: -1,
+        name: '',
+        phone: '',
+        username: '',
+        auth: false,
+      };
+      localStorage.setItem('user', JSON.stringify(temp));
+    }
+  }
 
-   getItem():any{ 
+  getLocalCalendar(): any {
     return localStorage.getItem('infoCalendar');
   }
 
-  getInitialEvents(){
+  getLocalUser(): any {
+    return localStorage.getItem('user');
+  }
+
+  getInitialEvents() {
+    this.INITIAL_EVENTS = JSON.parse(this.getLocalCalendar())
     return this.INITIAL_EVENTS;
   }
 
-  setAuth(auth:boolean){
-    this.auth=auth;
+  getAuth() {
+    return this.user.auth;
   }
 
-  getAuth(){
-    return this.auth;
+  getInforUser(){
+    this.user = JSON.parse(this.getLocalUser());
+    return this.user;
   }
 
-  login(email:any, password:any):any {
+  login(email: any, password: any): any {
     return new Promise(resolve => {
-      setTimeout(() => {
-        (email === 'a@a.com' && password === '123')? resolve(true): resolve(false);
-      }, 2000);
+      this.getUsers().subscribe(res => {
+        console.log('res de servidor', res);
+        res.forEach((element: any) => {
+          if (element.email === email && password == '123') {
+            this.user = element;
+            this.user.auth = true;
+            console.log('user', this.user);
+            localStorage.setItem('user', JSON.stringify(this.user));
+            resolve(true)
+          }
+        });
+        resolve(false)
+      }, err => {
+        console.log("ERRor login", err)
+      });
     });
+
   }
 
-
+  logOut() {
+    localStorage.removeItem("user");
+  }
 
 
 
@@ -57,7 +91,7 @@ export class InformationService {
       )
   }
 
-  errorHandl(error:any) {
+  errorHandl(error: any) {
     let errorMessage = '';
     if (error.error instanceof ErrorEvent) {
       errorMessage = error.error.message;// Get client-side error

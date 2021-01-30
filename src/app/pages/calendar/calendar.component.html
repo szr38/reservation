@@ -1,9 +1,18 @@
-<section>
+<section fxLayout="column"  fxLayoutGap="20px">
+    <div  fxLayout="row"  fxLayoutAlign="space-between start">
+        <span style="font-size: 20px;">Welcome: {{user.name}}</span>
+        <button class="button-2" (click)="onLogOut()" [disabled]="flagLogOut"
+        [ngClass]="{'button-disabled': flagLogOut}">Log Out</button>
+    </div>
     <div  fxLayout="row" fxLayoutAlign="end center"><span class="letter">Hours: <b>{{timeCount}}</b></span></div>
     <full-calendar [options]='calendarOptions'>
     </full-calendar>
-    <button (click)="onReservation()">Reserve</button>
-    <button (click)="deleteCalendarInfo()">Delete Info</button>
+    <div fxLayoutAlign="center center">
+        <button class="button-2" (click)="onReservation()" [disabled]="flagReservation"
+        [ngClass]="{'button-disabled': flagReservation}">Reserve</button>
+    </div>
+    
 </section>
 
-<pre><button (click)="test()">test</button></pre>
+<pre><button (click)="test()">test</button>
+    <button (click)="deleteCalendarInfo()">Delete Info</button></pre>

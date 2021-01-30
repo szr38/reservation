@@ -41,11 +41,10 @@ export class LoginComponent implements OnInit {
       let auth = false;
       auth = await this.service.login(this.form.get('email')!.value, this.form.get('password')!.value);
       if (auth === true) {
-        this.service.setAuth(true);
         this._router.navigateByUrl("/calendar");
       } else {
         this.flagButton = false;
-        console.log('probando else')
+        console.log('probando else', auth)
         this.openSnackBar('Error en datos');
       }
     }
@@ -60,12 +59,10 @@ export class LoginComponent implements OnInit {
 
   test() {
     console.log('auth: ', this.service.getAuth());
-    this.service.getUsers().subscribe(res => {
-      console.log('res de servidor',res);
-    }, err => {
-      console.log("ERRor get_adminEvents", err)
-    });
+  }
 
+  logOut(){
+    this.service.logOut();
   }
 
 }

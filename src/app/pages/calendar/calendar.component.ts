@@ -1,7 +1,10 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { CalendarOptions, DateSelectArg, EventClickArg, EventApi, EventInput } from '@fullcalendar/angular';
 import * as moment from 'moment';
-import {InformationService} from '../../services/information.service';
+import { User } from 'src/app/shared/interface/user';
+import { InformationService } from '../../services/information.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 
 @Component({
@@ -15,10 +18,20 @@ export class CalendarComponent implements OnInit {
   currentEvents: EventApi[] = []; // EventApi[]
   TODAY_STR = new Date().toISOString().replace(/T.*$/, '');
   businessHours: any[];
+  user: User;
 
-  timeCount=0;
+  timeCount = 0;
 
-  constructor(private infor: InformationService, private cd: ChangeDetectorRef) {
+  flagLogOut = false;
+  flagReservation = false;
+
+  INITIAL_EVENTS: EventInput[];
+
+  constructor(private infor: InformationService,
+    private cd: ChangeDetectorRef,
+    private _router: Router,
+    private _snackBar: MatSnackBar,) {
+    this.user = this.infor.getInforUser();
     this.businessHours = [{
       daysOfWeek: [1],
       startTime: '08:00',
@@ -37,29 +50,61 @@ export class CalendarComponent implements OnInit {
       daysOfWeek: [4],
       startTime: '7:00',
       endTime: '18:00'
-    }, 
+    },
     {
       daysOfWeek: [5],
       startTime: '08:00',
       endTime: '18:00'
-    }, 
+    },
     {
       daysOfWeek: [6],
       startTime: '08:00',
       endTime: '13:00'
     }];
 
-  if(this.infor.INITIAL_EVENTS===null){
-    this.infor.INITIAL_EVENTS = [
-      {
-        id: '2',
-        title: 'Maria Perez',
-        start: this.TODAY_STR + 'T12:00:00',
-        end: this.TODAY_STR + 'T16:00:00'
-      }
-    ];
-  }
-    
+    if (this.infor.getInitialEvents() === null) {
+      this.INITIAL_EVENTS = [
+        {
+          id: '-1',
+          title: 'Maria Perez',
+          start: this.TODAY_STR + 'T08:00:00',
+          end: this.TODAY_STR + 'T11:00:00',
+          backgroundColor: "#464545",
+          borderColor: "#464545",
+        }
+      ];
+    } else {
+      let temp=[{}];
+
+      this.infor.INITIAL_EVENTS.forEach(element => {
+        if (element.id == this.user.id.toString()) {
+          temp.push({
+            title: element.title,
+            start: element.start,
+            end: element.end,
+            overlap: false,
+            id: element.id,
+            durationEditable: true,
+            startEditable: true,
+            constraint: 'businessHours',
+            backgroundColor: "#00bfff",
+            borderColor: "#00bfff",
+          })
+        } else {
+          temp.push({
+            id: element.id,
+            title: element.title,
+            start: element.start,
+            end: element.end,
+            backgroundColor: "#464545",
+            borderColor: "#464545",
+            overlap: false,
+          });
+        }
+      });
+      this.INITIAL_EVENTS=temp;
+    }
+
 
     this.calendarOptions = {
       headerToolbar: {
@@ -79,7 +124,7 @@ export class CalendarComponent implements OnInit {
       },
       businessHours: this.businessHours,
       initialView: 'timeGridWeek',
-      initialEvents: this.infor.INITIAL_EVENTS,
+      initialEvents: this.INITIAL_EVENTS,
       weekends: true,
       editable: false,
       selectable: true,
@@ -88,15 +133,16 @@ export class CalendarComponent implements OnInit {
       select: this.handleDateSelect.bind(this),
       eventClick: this.handleEventClick.bind(this),
       eventsSet: this.handleEvents.bind(this),
-      // eventBorderColor:'#00d1ce',
-      // eventBackgroundColor:'#00d1ce',
+      // eventBorderColor:'#00bfff',
+      // eventBackgroundColor:'#00bfff',
     };
 
   }
 
   ngOnInit(): void {
     console.log(this.TODAY_STR);
-    
+
+
   }
 
   ngAfterViewInit(): void {
@@ -112,7 +158,6 @@ export class CalendarComponent implements OnInit {
   }
 
   handleDateSelect(selectInfo: DateSelectArg) {
-    // const title = prompt('Please enter a new title for your event');
     const calendarApi = selectInfo.view.calendar;
 
     calendarApi.unselect(); // clear date selection
@@ -123,39 +168,35 @@ export class CalendarComponent implements OnInit {
     ) {
       console.log("se crea evento")
       calendarApi.addEvent({
-        title: 'titulo',
+        title: this.user.name,
         start: selectInfo.startStr,
         end: selectInfo.endStr,
         overlap: false,
-        id: 'selected',
+        id: this.user.id.toString(),
         durationEditable: true,
         startEditable: true,
         constraint: 'businessHours',
-        backgroundColor: "#00d1ce",
-        borderColor: "#00d1ce",
+        backgroundColor: "#00bfff",
+        borderColor: "#00bfff",
       });
     }
-    // else {
-    //   alert("selecciona horario valido");
-    // }
-
-
-    // console.log(" selectinfo:", selectInfo);
-    // console.log("calendarApi:", calendarApi);
-    // console.log("currentEvents:::", this.currentEvents);
   }
 
   handleEventClick(clickInfo: EventClickArg) {
-    if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'`)) {
-      clickInfo.event.remove();
+    console.log('clickInfo: ', clickInfo);
+    if (clickInfo.event.id == this.user.id.toString()) {
+      if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'`)) {
+        clickInfo.event.remove();
+      }
     }
+
   }
 
   handleEvents(events: EventApi[]) {
-    this.timeCount=0;
+    this.timeCount = 0;
     events.forEach(element => {
-      if (element.id == 'selected') {
-        this.timeCount+=moment(element.end).diff(element.start, 'hour');
+      if (element.id === this.user.id.toString()) {
+        this.timeCount += moment(element.end).diff(element.start, 'hour');
       }
     });
     this.currentEvents = events;
@@ -174,6 +215,9 @@ export class CalendarComponent implements OnInit {
 
     });
 
+    if (flag == false) {
+      this.openSnackBar('Please, select valid time');
+    }
     return flag
   }
 
@@ -181,7 +225,7 @@ export class CalendarComponent implements OnInit {
   scheduleClash(start: Date, end: Date) {
     let flag;
     let res;
-    let temp:any[]=this.currentEvents;
+    let temp: any[] = this.currentEvents;
     temp.forEach(element => {
       // if ((element.start.getDate() == end.getDate()) && (element.start.getMonth() == end.getMonth()) && (element.start.getFullYear() == end.getFullYear())) {
       if (moment(element.start).isSame(end, 'day')) {
@@ -191,122 +235,59 @@ export class CalendarComponent implements OnInit {
         }
       }
     });
+
     flag = (flag == true) ? false : true;
+    if (flag == false) {
+      this.openSnackBar("Can't select busy hours");
+    }
     return flag
   }
 
-  
-  sameDay(start:Date, end:Date){
-    let flag=false;
-    
-    if(moment(start).isSame(end,'day')){
-      flag=true;
+
+  sameDay(start: Date, end: Date) {
+    let flag = false;
+
+    if (moment(start).isSame(end, 'day')) {
+      flag = true;
     }
 
+    if (flag == false) {
+      this.openSnackBar('Please, select valid time');
+    }
     return flag;
   }
 
 
-  onReservation(){
-    localStorage.setItem('infoCalendar', JSON.stringify(this.currentEvents));
-    console.log('se guardo', )
+  onLogOut() {
+    this.flagLogOut = true;
+    this.infor.logOut();
+    this._router.navigateByUrl('/login');
   }
 
-  deleteCalendarInfo(){
+  onReservation() {
+    this.flagReservation = true;
+    localStorage.setItem('infoCalendar', JSON.stringify(this.currentEvents));
+    console.log('se guardo')
+    setTimeout(() => {
+      this.openSnackBar('Reservation successfully')
+      this.flagReservation = false;
+    }, 2000);
+  }
+
+  openSnackBar(message: string) {
+    this._snackBar.open(message, '', {
+      duration: 2500,
+    });
+  }
+
+
+  deleteCalendarInfo() {
     localStorage.removeItem("infoCalendar");
   }
 
-  test(){
-    console.log(this.infor.getInitialEvents());
-    console.log('auth: ',this.infor.getAuth());
-    
+  test() {
+    console.log('auth: ', this.infor.getAuth());
   }
-
-
-  // por defecto
-  // title = 'reservation';
-
-
-
-  // eventGuid = 0;
-  // TODAY_STR = new Date().toISOString().replace(/T.*$/, ''); // YYYY-MM-DD of today
-  // INITIAL_EVENTS: EventInput[] = [
-  //   {
-  //     id: this.createEventId(),
-  //     title: 'All-day event',
-  //     start: this.TODAY_STR
-  //   },
-  //   {
-  //     id: this.createEventId(),
-  //     title: 'Timed event',
-  //     start: this.TODAY_STR + 'T12:00:00'
-  //   }
-  // ];
-
-  // createEventId() {
-  //   return String(this.eventGuid++);
-  // }
-
-  // calendarVisible = true;
-  // calendarOptions: CalendarOptions = {
-  //   headerToolbar: {
-  //     left: 'prev,next today',
-  //     center: 'title',
-  //     right: 'timeGridWeek,timeGridDay,listWeek'
-  //   },
-  //   initialView: 'timeGridWeek',
-  //   initialEvents: this.INITIAL_EVENTS, // alternatively, use the `events` setting to fetch from a feed
-  //   weekends: true,
-  //   editable: true,
-  //   selectable: true,
-  //   selectMirror: true,
-  //   dayMaxEvents: true,
-  //   select: this.handleDateSelect.bind(this),
-  //   eventClick: this.handleEventClick.bind(this),
-  //   eventsSet: this.handleEvents.bind(this)
-  //   /* you can update a remote database when these fire:
-  //   eventAdd:
-  //   eventChange:
-  //   eventRemove:
-  //   */
-  // };
-  // currentEvents: EventApi[] = [];
-
-  // handleCalendarToggle() {
-  //   this.calendarVisible = !this.calendarVisible;
-  // }
-
-  // handleWeekendsToggle() {
-  //   const { calendarOptions } = this;
-  //   calendarOptions.weekends = !calendarOptions.weekends;
-  // }
-
-  // handleDateSelect(selectInfo: DateSelectArg) {
-  //   const title = prompt('Please enter a new title for your event');
-  //   const calendarApi = selectInfo.view.calendar;
-
-  //   calendarApi.unselect(); // clear date selection
-
-  //   if (title) {
-  //     calendarApi.addEvent({
-  //       id: this.createEventId(),
-  //       title,
-  //       start: selectInfo.startStr,
-  //       end: selectInfo.endStr,
-  //       allDay: selectInfo.allDay
-  //     });
-  //   }
-  // }
-
-  // handleEventClick(clickInfo: EventClickArg) {
-  //   if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'`)) {
-  //     clickInfo.event.remove();
-  //   }
-  // }
-
-  // handleEvents(events: EventApi[]) {
-  //   this.currentEvents = events;
-  // }
 
 }
 
