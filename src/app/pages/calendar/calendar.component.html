@@ -1,4 +1,4 @@
-<section fxLayout="column"  fxLayoutGap="20px">
+<section fxLayout="column" fxLayoutAlign="space-between stretch" style="height: 100vh;" #calendar>
     <div  fxLayout="row"  fxLayoutAlign="space-between start">
         <span style="font-size: 20px;">Welcome: {{user.name}}</span>
         <button class="button-2" (click)="onLogOut()" [disabled]="flagLogOut"
@@ -14,5 +14,5 @@
     
 </section>
 
-<pre><button (click)="test()">test</button>
-    <button (click)="deleteCalendarInfo()">Delete Info</button></pre>
+<!-- <pre><button (click)="test()">test</button>
+    <button (click)="deleteCalendarInfo()">Delete Info</button></pre> -->

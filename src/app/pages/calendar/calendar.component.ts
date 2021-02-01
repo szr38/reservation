@@ -27,10 +27,18 @@ export class CalendarComponent implements OnInit {
 
   INITIAL_EVENTS: EventInput[];
 
+  height:number;
+
   constructor(private infor: InformationService,
     private cd: ChangeDetectorRef,
     private _router: Router,
     private _snackBar: MatSnackBar,) {
+    
+    if(window.innerHeight>960){
+      this.height=580;
+    }else{
+      this.height=430;
+    }
     this.user = this.infor.getInforUser();
     this.businessHours = [{
       daysOfWeek: [1],
@@ -114,7 +122,7 @@ export class CalendarComponent implements OnInit {
       },
       hiddenDays: [0],
       allDaySlot: false,
-      height: 'auto',
+      height: this.height, 
       slotDuration: '01:00:00',
       slotLabelInterval: '01:00:00',
       // locale: esLocale, 
@@ -139,10 +147,13 @@ export class CalendarComponent implements OnInit {
 
   }
 
+  
   ngOnInit(): void {
     console.log(this.TODAY_STR);
-
-
+    
+    
+    
+    
   }
 
   ngAfterViewInit(): void {

@@ -15,12 +15,14 @@ export class LoginComponent implements OnInit {
   form: FormGroup;
   hide = true;
   flagButton = false;
+  emails:string[]=[];
 
 
   constructor(private fb: FormBuilder,
     private _snackBar: MatSnackBar,
     private service: InformationService,
     private _router: Router,) {
+      this.serviceInforUser();
     this.form = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', Validators.required]
@@ -63,6 +65,23 @@ export class LoginComponent implements OnInit {
 
   logOut(){
     this.service.logOut();
+  }
+
+  serviceInforUser(){
+    let temp:string[]=[];
+    this.service.getUsers().subscribe((res:any[]) => {
+      console.log('res de servidor', res);
+      res.forEach(element => {
+        console.log(element);
+        
+        temp.push(element.email);
+      });
+      this.emails=temp;
+      console.log('emails',this.emails);
+      
+    }, (err:any) => {
+      console.log("ERRor login", err)
+    });
   }
 
 }
