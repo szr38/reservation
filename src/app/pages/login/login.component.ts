@@ -36,7 +36,7 @@ export class LoginComponent implements OnInit {
   async login() {
     this.flagButton = true;
     if (this.form.valid === false) {
-      this.openSnackBar('Por favor llenar formulario');
+      this.openSnackBar('Please fill out the form');
       this.flagButton = false;
       return false;
     } else {
@@ -46,7 +46,6 @@ export class LoginComponent implements OnInit {
         this._router.navigateByUrl("/calendar");
       } else {
         this.flagButton = false;
-        console.log('probando else', auth)
         this.openSnackBar('Error en datos');
       }
     }
@@ -59,10 +58,6 @@ export class LoginComponent implements OnInit {
     });
   }
 
-  test() {
-    console.log('auth: ', this.service.getAuth());
-  }
-
   logOut(){
     this.service.logOut();
   }
@@ -70,14 +65,10 @@ export class LoginComponent implements OnInit {
   serviceInforUser(){
     let temp:string[]=[];
     this.service.getUsers().subscribe((res:any[]) => {
-      console.log('res de servidor', res);
       res.forEach(element => {
-        console.log(element);
-        
         temp.push(element.email);
       });
       this.emails=temp;
-      console.log('emails',this.emails);
       
     }, (err:any) => {
       console.log("ERRor login", err)

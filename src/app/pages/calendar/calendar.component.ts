@@ -177,7 +177,6 @@ export class CalendarComponent implements OnInit {
       && this.scheduleClash(selectInfo.start, selectInfo.end)
       && this.sameDay(selectInfo.start, selectInfo.end)
     ) {
-      console.log("se crea evento")
       calendarApi.addEvent({
         title: this.user.name,
         start: selectInfo.startStr,
@@ -194,7 +193,6 @@ export class CalendarComponent implements OnInit {
   }
 
   handleEventClick(clickInfo: EventClickArg) {
-    console.log('clickInfo: ', clickInfo);
     if (clickInfo.event.id == this.user.id.toString()) {
       if (confirm(`Are you sure you want to delete the event '${clickInfo.event.title}'`)) {
         clickInfo.event.remove();
@@ -278,7 +276,6 @@ export class CalendarComponent implements OnInit {
   onReservation() {
     this.flagReservation = true;
     localStorage.setItem('infoCalendar', JSON.stringify(this.currentEvents));
-    console.log('se guardo')
     setTimeout(() => {
       this.openSnackBar('Reservation successfully')
       this.flagReservation = false;
@@ -294,10 +291,6 @@ export class CalendarComponent implements OnInit {
 
   deleteCalendarInfo() {
     localStorage.removeItem("infoCalendar");
-  }
-
-  test() {
-    console.log('auth: ', this.infor.getAuth());
   }
 
 }

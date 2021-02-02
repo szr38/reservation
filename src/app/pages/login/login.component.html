@@ -1,6 +1,6 @@
 <section fxLayout="column" fxLayoutAlign="center center" fxLayoutGap="5%" style="height: 100vh; overflow: hidden;">
     <h1>Welcome to Nameless Spa</h1>
-    <div style="width: 90%; height: 70%;" fxLayout="row" fxLayoutAlign="center stretch">
+    <div style="width: 80%; height: 50%;" fxLayout="row" fxLayoutAlign="center stretch">
         <div fxFlex="50" class="logo" fxLayoutAlign="center center">
             <img src="/assets/img/logo2.png" alt="" style="height: 85%;">
         </div>
@@ -8,7 +8,7 @@
             <form [formGroup]="form" style="height: 100%; width: 100%;" fxLayout="column">
                 <mat-form-field fxFlex>
                     <mat-label>Email</mat-label>
-                    <input type="email" matInput formControlName="email" placeholder="Ingrese correo">
+                    <input type="email" matInput formControlName="email" placeholder="Sincere@april.biz">
                     <mat-error *ngIf="form.controls.password.status=='INVALID'  &&  form.controls.email.value!=''">
                         Please enter a valid email address
                     </mat-error>
@@ -35,15 +35,15 @@
         </div>
     </div>
     <!-- <pre>{{emails}}</pre> -->
-    <div style="width: 95%;">
-        <h1>Users for loguin</h1>
+    <div fxLayout="column" fxLayoutAlign="center center"  style="width: 90%;" >
+        <h1>Users for log in</h1>
         <div fxLayout="row wrap" fxLayoutAlign="space-between center" >
             <span *ngFor="let item of emails" fxFlex="20">{{item}}</span>
         </div>
     </div>
 </section>
 
-<!-- <pre><button (click)="test()">test</button>
+<!-- <pre>
     <button (click)="logOut()">logOut</button>
 </pre> -->
 
