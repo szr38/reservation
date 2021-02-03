@@ -19,7 +19,6 @@ export class InformationService {
     this.INITIAL_EVENTS = JSON.parse(this.getLocalCalendar());
     this.user = JSON.parse(this.getLocalUser());
     if (this.user == null) {
-      console.log('user null', this.user);
       const temp: User = {
         address: {},
         email: '',
@@ -47,6 +46,9 @@ export class InformationService {
   }
 
   getAuth() {
+    if(this.user==null){
+      return false;
+    }
     return this.user.auth;
   }
 
