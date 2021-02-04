@@ -16,7 +16,8 @@ section {
   height: 2rem;
   background-color: #00bfff;
   color: white;
-  box-shadow: 3px 3px grey;
+  box-shadow: 3px 3px rgba(128, 128, 128, 0.568);
+  cursor: pointer;
 }
 
 .button-log{
@@ -26,7 +27,8 @@ section {
     height: 3rem;
     background-color: #00bfff;
     color: white;
-    box-shadow: 3px 3px grey;
+    box-shadow: 3px 3px rgba(128, 128, 128, 0.568);
+    cursor: pointer;
   }
   
   .button-log:focus, .button-2:focus{
@@ -35,6 +37,10 @@ section {
 
   .button-disabled{
     background-color: grey;
+}
+
+.button-2:hover, .button-log:hover{
+  box-shadow: 3px 3px grey;
 }
 
 .test{
